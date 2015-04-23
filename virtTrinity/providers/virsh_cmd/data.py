@@ -17,7 +17,7 @@ class VirshCmd(data.String):
         set(['qemu-monitor-event', 'event']))
 
 
-class VirshOptSet(data.Data):
+class OptSet(data.Data):
     def validate(self, obj):
         return (type(obj) is set and
                 all([re.match(r'\w.*', i) for i in obj]))
@@ -32,7 +32,7 @@ class VirshOptSet(data.Data):
         return res
 
 
-class OptSet(VirshOptSet):
+class ValidOptSet(OptSet):
     def validate(self, obj):
         opts = virsh.commands[self._params['test'].cmd]['options']
         for opt_name in obj:
@@ -58,7 +58,7 @@ class OptSet(VirshOptSet):
         return res
 
 
-class MissingDepOptSet(VirshOptSet):
+class MissingDepOptSet(OptSet):
     def generate(self):
         cmd_name = self._params['test'].cmd
         opts = virsh.commands[cmd_name]['options']

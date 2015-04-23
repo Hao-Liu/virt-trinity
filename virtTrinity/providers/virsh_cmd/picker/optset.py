@@ -6,12 +6,12 @@ from virtTrinity.providers.virsh_cmd.picker.command import CmdPicker
 
 class OptSetPicker(picker.PickerBase):
     depends_on = CmdPicker
-    data_type = data.VirshOptSet()
+    data_type = data.OptSet()
 
     types = {
         "positive": {
             "patterns": None,
-            "data_type": data.OptSet(),
+            "data_type": data.ValidOptSet(),
         },
         "miss_dep": {
             "patterns": r"command '.*' requires .* option",
