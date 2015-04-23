@@ -66,7 +66,7 @@ class VirtTrinityApp(object):
         res = item.res
         fail_patts = item.fail_patts
 
-        test_pattern = '#Failed to parse'
+        test_pattern = 'PATTERNS.TO.TEST.ON'
         if res:
             if res.exit_status == 'timeout':
                 counters['timeout_cnt'] += 1
