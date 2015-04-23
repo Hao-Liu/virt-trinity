@@ -60,7 +60,8 @@ class OptSet(VirshOptSet):
 
 class MissingDepOptSet(VirshOptSet):
     def generate(self):
-        opts = virsh.commands[self._params['test'].cmd]['options']
+        cmd_name = self._params['test'].cmd
+        opts = virsh.commands[cmd_name]['options']
         res = {}
         for name, opt in opts.items():
             if opt['required'] or random.random() < 0.3:
@@ -86,7 +87,8 @@ class MissingDepOptSet(VirshOptSet):
         return res
 
     def validate(self, obj):
-        opts = virsh.commands[self._params['test'].cmd]['options']
+        cmd_name = self._params['test'].cmd
+        opts = virsh.commands[cmd_name]['options']
         for opt_name in obj:
             if opt_name not in opts:
                 return False
