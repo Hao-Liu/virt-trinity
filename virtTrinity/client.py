@@ -176,23 +176,26 @@ class VirtTrinityApp(object):
         headers = {}
         headers['content-type'] = 'application/json'
         url = 'http://%s:%s/api/tests/' % (self.args.server, self.args.port)
-        response = requests.post(
-            url,
-            data=data,
-            headers=headers,
-            auth=(self.args.username, self.args.password),
-        )
-        if response.status_code != 201:
-            logging.error('Failed to send result (HTTP%s):',
-                          response.status_code)
-            if 'DOCTYPE' in response.text:
-                html_path = 'debug_%s.html' % rnd.regex('[a-z]{4}')
-                with open(html_path, 'w') as fp:
-                    fp.write(response.text)
-                logging.error('Html response saved to %s',
-                              os.path.abspath(html_path))
-            else:
-                logging.error(response.text)
+        try:
+            response = requests.post(
+                url,
+                data=data,
+                headers=headers,
+                auth=(self.args.username, self.args.password),
+            )
+            if response.status_code != 201:
+                logging.error('Failed to send result (HTTP%s):',
+                              response.status_code)
+                if 'DOCTYPE' in response.text:
+                    html_path = 'debug_%s.html' % rnd.regex('[a-z]{4}')
+                    with open(html_path, 'w') as fp:
+                        fp.write(response.text)
+                    logging.error('Html response saved to %s',
+                                  os.path.abspath(html_path))
+                else:
+                    logging.error(response.text)
+        except requests.ConnectionError, detail:
+            logging.error('Failed to send result to server: %s', detail)
 
     def run(self):
         """
