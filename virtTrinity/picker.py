@@ -70,6 +70,8 @@ class PickerBase(object):
         else:
             chosen_type = random.choice(types)
 
+        logging.debug('Chosen type is %s', chosen_type)
+
         # Get chosen data type instance and failure patterns.
         if chosen_type == 'other':
             data_type = self.data_type

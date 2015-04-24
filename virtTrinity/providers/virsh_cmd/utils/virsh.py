@@ -7,6 +7,176 @@ import subprocess
 from virtTrinity import data_dir
 
 
+EXCLUSIVE_OPTIONS = {
+    'allocpages': [
+        ('all', 'cellno'),
+    ],
+    'attach-device': [
+        ('persistent', 'current'),
+        ('current', 'config'),
+        ('current', 'live'),
+    ],
+    'attach-disk': [
+        ('persistent', 'current'),
+        ('current', 'config'),
+        ('current', 'live'),
+    ],
+    'attach-interface': [
+        ('persistent', 'current'),
+        ('current', 'config'),
+        ('current', 'live'),
+    ],
+    'blockcopy': [
+        ('blockdev', 'xml'),
+        ('dest', 'xml'),
+        ('format', 'xml'),
+    ],
+    'blkdeviotune': [
+        ('current', 'config'),
+        ('current', 'live'),
+    ],
+    'blkiotune': [
+        ('current', 'config'),
+        ('current', 'live'),
+    ],
+    'change-media': [
+        ('eject', 'block'),
+        ('eject', 'insert'),
+        ('eject', 'update'),
+        ('insert', 'update'),
+        ('current', 'config'),
+        ('current', 'live'),
+    ],
+    'desc': [
+        ('current', 'live'),
+        ('current', 'config'),
+    ],
+    'detach-device': [
+        ('persistent', 'current'),
+        ('current', 'config'),
+        ('current', 'live'),
+    ],
+    'detach-disk': [
+        ('persistent', 'current'),
+        ('current', 'live'),
+        ('current', 'config'),
+    ],
+    'detach-interface': [
+        ('persistent', 'current'),
+        ('current', 'config'),
+        ('current', 'live'),
+    ],
+    'domiftune': [
+        ('current', 'config'),
+        ('current', 'live'),
+    ],
+    'dommemstat': [
+        ('current', 'config'),
+        ('current', 'live'),
+    ],
+    'domtime': [
+        ('now', 'sync'),
+        ('time', 'now'),
+        ('time', 'sync'),
+    ],
+    'emulatorpin': [
+        ('current', 'config'),
+        ('current', 'live'),
+    ],
+    'iothreadinfo': [
+        ('current', 'config'),
+        ('current', 'live'),
+    ],
+    'iothreadpin': [
+        ('current', 'config'),
+        ('current', 'live'),
+    ],
+    'freecell': [
+        ('all', 'cellno'),
+    ],
+    'freepages': [
+        ('all', 'cellno'),
+    ],
+    'metadata': [
+        ('edit', 'set'),
+        ('current', 'config'),
+        ('current', 'live'),
+        ('remove', 'edit'),
+        ('remove', 'set'),
+    ],
+    'memtune': [
+        ('current', 'config'),
+        ('current', 'live'),
+    ],
+    'numatune': [
+        ('current', 'config'),
+        ('current', 'live'),
+    ],
+    'restore': [
+        ('running', 'paused'),
+    ],
+    'save-image-edit': [
+        ('running', 'paused'),
+    ],
+    'setvcpus': [
+        ('guest', 'config'),
+        ('current', 'live'),
+        ('current', 'config'),
+    ],
+    'setmaxmem': [
+        ('current', 'live'),
+        ('current', 'config'),
+    ],
+    'setmem': [
+        ('current', 'live'),
+        ('current', 'config'),
+    ],
+    'schedinfo': [
+        ('current', 'live'),
+        ('current', 'config'),
+    ],
+    'snapshot-current': [
+        ('name', 'snapshotname'),
+    ],
+    'snapshot-edit': [
+        ('rename', 'clone'),
+    ],
+    'snapshot-list': [
+        ('active', 'tree'),
+        ('current', 'tree'),
+        ('disk-only', 'tree'),
+        ('external', 'tree'),
+        ('inactive', 'tree'),
+        ('internal', 'tree'),
+        ('leaves', 'tree'),
+        ('no-leaves', 'tree'),
+        ('roots', 'from'),
+        ('roots', 'tree'),
+        ('roots', 'current'),
+        ('tree', 'name'),
+        ('parent', 'tree'),
+        ('parent', 'roots'),
+    ],
+    'update-device': [
+        ('persistent', 'current'),
+        ('current', 'config'),
+        ('current', 'live'),
+    ],
+    'vcpucount': [
+        ('active', 'maximum'),
+        ('guest', 'config'),
+        ('live', 'config'),
+        ('current', 'config'),
+        ('current', 'live'),
+    ],
+    'vcpupin': [
+        ('current', 'config'),
+        ('current', 'live'),
+        ('live', 'config'),
+    ],
+}
+
+
 def option_from_line(line):
     option = {'required': False, 'argv': False}
     name, type_name, _ = [i.strip() for i in line.split(' ', 2)]
@@ -82,13 +252,14 @@ def command_from_help(name):
             help_contents[item_name] = ''.join(item_content)
         item_content = []
 
-    cmd = {}
+    cmd = {'options': {}, 'exclusives': {}}
     if 'options' in help_contents:
         cmd['options'] = _parse_options(
             help_contents['options'],
             help_contents['synopsis'])
-    else:
-        cmd['options'] = {}
+
+    if name in EXCLUSIVE_OPTIONS:
+        cmd['exclusives'] = EXCLUSIVE_OPTIONS[name]
     return cmd
 
 

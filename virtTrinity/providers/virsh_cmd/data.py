@@ -34,7 +34,9 @@ class OptSet(data.Data):
 
 class ValidOptSet(OptSet):
     def validate(self, obj):
-        opts = virsh.commands[self._params['test'].cmd]['options']
+        cmd_name = self._params['test'].cmd
+        opts = virsh.commands[cmd_name]['options']
+        excs = virsh.commands[cmd_name]['exclusives']
         for opt_name in obj:
             if opt_name not in opts:
                 return False
@@ -42,10 +44,15 @@ class ValidOptSet(OptSet):
         for opt_name, opt in opts.items():
             if opt['required'] and opt_name not in obj:
                 return False
+        for exc_a, exc_b in excs:
+            if exc_a in obj and exc_b in obj:
+                return True
         return True
 
     def generate(self):
-        opts = virsh.commands[self._params['test'].cmd]['options']
+        cmd_name = self._params['test'].cmd
+        opts = virsh.commands[cmd_name]['options']
+        excs = virsh.commands[cmd_name]['exclusives']
         res = {}
         for name, opt in opts.items():
             if opt['required'] or random.random() < 0.3:
@@ -55,35 +62,39 @@ class ValidOptSet(OptSet):
                     res[name] = str(rnd.int_exp())
                 else:
                     res[name] = rnd.text()
+        for exc_a, exc_b in excs:
+            if exc_a in res and exc_b in res:
+                chosen_opt = random.choice([exc_a, exc_b])
+                del res[chosen_opt]
         return res
 
 
-class MissingDepOptSet(OptSet):
+class MissingRequiredOptSet(OptSet):
     def generate(self):
         cmd_name = self._params['test'].cmd
         opts = virsh.commands[cmd_name]['options']
-        res = {}
-        for name, opt in opts.items():
-            if opt['required'] or random.random() < 0.3:
-                if opt['type'] == 'bool':
-                    res[name] = True
-                elif opt['type'] == 'number':
-                    res[name] = str(rnd.int_exp())
-                else:
-                    res[name] = rnd.text()
-
         requires = [opt_name
                     for opt_name, opt in opts.items()
                     if opt['required']]
         if not requires:
             raise ValueError(
                 'Impossible generate missing dependence option set '
-                'for command %s' % self._params['test'].cmd)
-        else:
-            cnt = rnd.int_exp(min_inc=1, max_inc=len(requires))
-            choices = random.sample(requires, cnt)
-            for choice in choices:
-                del res[choice]
+                'for command %s' % cmd_name)
+
+        res = {}
+        for name, opt in opts.items():
+            if opt['required'] or random.random() < 0.3:
+                if opt['type'] == 'bool':
+                    res[name] = True
+                elif opt['type'] == 'number':
+                    res[name] = str(rnd.int_exp())
+                else:
+                    res[name] = rnd.text()
+
+        cnt = rnd.count(min_inc=1, max_inc=len(requires))
+        choices = random.sample(requires, cnt)
+        for choice in choices:
+            del res[choice]
         return res
 
     def validate(self, obj):
@@ -95,6 +106,50 @@ class MissingDepOptSet(OptSet):
 
         for opt_name, opt in opts.items():
             if opt['required'] and opt_name not in obj:
+                return True
+        return False
+
+
+class ExclusiveOptSet(OptSet):
+    def generate(self):
+        cmd_name = self._params['test'].cmd
+        opts = virsh.commands[cmd_name]['options']
+        excs = virsh.commands[cmd_name]['exclusives']
+        if not excs:
+            raise ValueError('Impossible generate exclusive '
+                             'option set for command %s' % cmd_name)
+        res = {}
+        for name, opt in opts.items():
+            if opt['required'] or random.random() < 0.3:
+                if opt['type'] == 'bool':
+                    res[name] = True
+                elif opt['type'] == 'number':
+                    res[name] = str(rnd.int_exp())
+                else:
+                    res[name] = rnd.text()
+
+        exc = random.choice(excs)
+        for opt_name in exc:
+            if opt_name not in res:
+                opt = opts[opt_name]
+                if opt['type'] == 'bool':
+                    res[opt_name] = True
+                elif opt['type'] == 'number':
+                    res[opt_name] = str(rnd.int_exp())
+                else:
+                    res[opt_name] = rnd.text()
+        return res
+
+    def validate(self, obj):
+        cmd_name = self._params['test'].cmd
+        opts = virsh.commands[cmd_name]['options']
+        excs = virsh.commands[cmd_name]['exclusives']
+        for opt_name in obj:
+            if opt_name not in opts:
+                return False
+
+        for exc_a, exc_b in excs:
+            if exc_a in obj and exc_b in obj:
                 return True
         return False
 

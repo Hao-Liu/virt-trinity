@@ -13,9 +13,15 @@ class OptSetPicker(picker.PickerBase):
             "patterns": None,
             "data_type": data.ValidOptSet(),
         },
-        "miss_dep": {
+        "miss_required": {
             "patterns": r"command '.*' requires .* option",
-            "data_type": data.MissingDepOptSet(),
+            "data_type": data.MissingRequiredOptSet(),
+        },
+        "exclusive": {
+            "patterns": [
+                r"Options .* and .* are mutually exclusive",
+            ],
+            "data_type": data.ExclusiveOptSet(),
         },
         "other": {
             "patterns": [
