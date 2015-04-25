@@ -17,7 +17,6 @@ class PickSkippedError(PickerError):
 
 
 class PickerBase(object):
-    picker_type = 'selector'
     types = {}
     data_type = None
 
@@ -58,6 +57,9 @@ class PickerBase(object):
             "Method '%s' should be implemented for class '%s'" %
             (name, cls_name))
 
+
+
+class Picker(PickerBase):
     def pick(self, positive_weight=0.999):
         types = self.types.keys()
         if not types:
@@ -87,28 +89,39 @@ class PickerBase(object):
                     (chosen_type, self.__class__.__name__))
         fail_patts = self.types[chosen_type]['patterns']
 
-        # Apply result according to picker's type
-        if self.picker_type == 'selector':
-            try:
-                if data_type:
-                    res = data_type.generate()
-                else:
-                    res = None
-            except ValueError, detail:
-                raise PickImpossibleError(
-                    "Can't generate data. Picking is impossible: %s" %
-                    detail)
-            try:
-                self.apply(res)
-            except NotImplementedError:
-                pass
-            try:
-                self.apply_many(data_type)
-            except NotImplementedError:
-                pass
-        elif self.picker_type == 'skipper':
-            if not data_type.validate(self.checkpoint()):
-                raise PickSkippedError("Picker skipped")
+        try:
+            if data_type:
+                res = data_type.generate()
+            else:
+                res = None
+        except ValueError, detail:
+            raise PickImpossibleError(
+                "Can't generate data. Picking is impossible: %s" %
+                detail)
+        try:
+            self.apply(res)
+        except NotImplementedError:
+            pass
+        try:
+            self.apply_many(data_type)
+        except NotImplementedError:
+            pass
+
+        return fail_patts
+
+
+class Checker(PickerBase):
+    def pick(self, positive_weight=0.999):
+        types = self.types.keys()
+        if not types:
+            raise ValueError("Property 'types' is not set for %s" %
+                             self.__class__.__name__)
+
+        predicted_type = self.predict()
+        if 'positive' in types and predicted_type != 'positive':
+            if random.random() < positive_weight:
+                raise PickSkippedError("Pick skipped")
+        fail_patts = self.types[predicted_type]['patterns']
         return fail_patts
 
 
@@ -140,11 +153,12 @@ def pick(item, root=None):
 
 def setup_picker_tree(module):
     def _picker_predicate(member):
-        return inspect.isclass(member) and member.__name__.endswith('Picker')
+        return inspect.isclass(member) and issubclass(member, PickerBase)
 
     pickers = dict(
         inspect.getmembers(sys.modules[module.__name__],
                            predicate=_picker_predicate))
+
 
     logging.debug('Found %s pickers: %s', len(pickers), pickers)
 

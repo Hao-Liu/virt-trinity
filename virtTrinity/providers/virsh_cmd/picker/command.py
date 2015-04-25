@@ -3,7 +3,7 @@ from virtTrinity import data as common_data
 from virtTrinity.providers.virsh_cmd import data
 
 
-class CmdPicker(picker.PickerBase):
+class CmdPicker(picker.Picker):
     depends_on = None
     # A command should never starts with a dash
     data_type = ~common_data.Option()

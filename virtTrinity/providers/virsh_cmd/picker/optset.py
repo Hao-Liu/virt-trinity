@@ -4,7 +4,7 @@ from virtTrinity.providers.virsh_cmd.utils import virsh
 from virtTrinity.providers.virsh_cmd.picker.command import CmdPicker
 
 
-class OptSetPicker(picker.PickerBase):
+class OptSetPicker(picker.Picker):
     depends_on = CmdPicker
     data_type = data.OptSet()
 

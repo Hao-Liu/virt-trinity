@@ -3,17 +3,14 @@ from xml.etree import ElementTree
 from virtTrinity import picker
 from virtTrinity import data as common_data
 from virtTrinity.providers.virsh_cmd import data
-from virtTrinity.providers.virsh_cmd.picker.option import CmdDefineXMLPicker
+from virtTrinity.providers.virsh_cmd.picker.cmd_define import CmdDefineXMLPicker
 
 
-class DomainXMLTypePicker(picker.PickerBase):
+class DomainXMLTypeChecker(picker.Checker):
     depends_on = CmdDefineXMLPicker
-    picker_type = 'skipper'
-    data_type = data.DomainType()
     types = {
         "positive": {
             "patterns": None,
-            "data_type": data.AvailDomainType(),
         },
         "other": {
             "patterns": "unexpected domain type .*, expecting one of these: .*",
@@ -24,11 +21,15 @@ class DomainXMLTypePicker(picker.PickerBase):
         if isinstance(self.test.xml, ElementTree.Element):
             return self.test.xml.tag == 'domain'
 
-    def checkpoint(self):
-        return self.test.xml.get('type')
+    def predict(self):
+        dom_type = self.test.xml.get('type')
+        if data.AvailDomainType().validate(dom_type):
+            return 'positive'
+        else:
+            return 'other'
 
 
-class DomainXMLMemSizePicker(picker.PickerBase):
+class DomainXMLMemSizePicker(picker.Picker):
     depends_on = CmdDefineXMLPicker
     data_type = data.MemorySize()
     types = {
@@ -55,7 +56,7 @@ class DomainXMLMemSizePicker(picker.PickerBase):
         mem_xml.text = size
 
 
-class DomainXMLMaxMemoryPicker(picker.PickerBase):
+class DomainXMLMaxMemoryPicker(picker.Picker):
     depends_on = CmdDefineXMLPicker
     data_type = data.MemorySize()
     types = {
@@ -82,7 +83,7 @@ class DomainXMLMaxMemoryPicker(picker.PickerBase):
         mem_xml.text = size
 
 
-class DomainXMLCurrentMemSizePicker(picker.PickerBase):
+class DomainXMLCurrentMemSizePicker(picker.Picker):
     depends_on = CmdDefineXMLPicker
     data_type = data.MemorySize()
     types = {
@@ -109,7 +110,7 @@ class DomainXMLCurrentMemSizePicker(picker.PickerBase):
         mem_xml.text = size
 
 
-class DomainXMLMemoryBackingHugepagesNodesetPicker(picker.PickerBase):
+class DomainXMLMemoryBackingHugepagesNodesetPicker(picker.Picker):
     depends_on = CmdDefineXMLPicker
     data_type = common_data.String()
     types = {
@@ -135,7 +136,7 @@ class DomainXMLMemoryBackingHugepagesNodesetPicker(picker.PickerBase):
             page_xml.set('nodeset', tp.generate())
 
 
-class DomainXMLCputuneVcpupinCpusetPicker(picker.PickerBase):
+class DomainXMLCputuneVcpupinCpusetPicker(picker.Picker):
     depends_on = CmdDefineXMLPicker
     data_type = common_data.String()
     types = {
@@ -160,7 +161,7 @@ class DomainXMLCputuneVcpupinCpusetPicker(picker.PickerBase):
             page_xml.set('cpuset', tp.generate())
 
 
-class DomainXMLCputuneEmulatorpinCpusetPicker(picker.PickerBase):
+class DomainXMLCputuneEmulatorpinCpusetPicker(picker.Picker):
     depends_on = CmdDefineXMLPicker
     data_type = common_data.String()
     types = {
@@ -185,7 +186,7 @@ class DomainXMLCputuneEmulatorpinCpusetPicker(picker.PickerBase):
             page_xml.set('cpuset', tp.generate())
 
 
-class DomainXMLCputuneIothreadpinCpusetPicker(picker.PickerBase):
+class DomainXMLCputuneIothreadpinCpusetPicker(picker.Picker):
     depends_on = CmdDefineXMLPicker
     data_type = common_data.String()
     types = {
@@ -210,7 +211,7 @@ class DomainXMLCputuneIothreadpinCpusetPicker(picker.PickerBase):
             page_xml.set('cpuset', tp.generate())
 
 
-class DomainXMLVcpuCpusetPicker(picker.PickerBase):
+class DomainXMLVcpuCpusetPicker(picker.Picker):
     depends_on = CmdDefineXMLPicker
     data_type = common_data.String()
     types = {
@@ -235,7 +236,7 @@ class DomainXMLVcpuCpusetPicker(picker.PickerBase):
         vcpu_xml.set('cpuset', res)
 
 
-class DomainXMLMemtuneHardLimitPicker(picker.PickerBase):
+class DomainXMLMemtuneHardLimitPicker(picker.Picker):
     depends_on = CmdDefineXMLPicker
     data_type = data.MemorySize()
     types = {
@@ -262,7 +263,7 @@ class DomainXMLMemtuneHardLimitPicker(picker.PickerBase):
         mem_xml.text = size
 
 
-class DomainXMLMemtuneSoftLimitPicker(picker.PickerBase):
+class DomainXMLMemtuneSoftLimitPicker(picker.Picker):
     depends_on = CmdDefineXMLPicker
     data_type = data.MemorySize()
     types = {
@@ -289,7 +290,7 @@ class DomainXMLMemtuneSoftLimitPicker(picker.PickerBase):
         mem_xml.text = size
 
 
-class DomainXMLMemtuneMinGuaranteePicker(picker.PickerBase):
+class DomainXMLMemtuneMinGuaranteePicker(picker.Picker):
     depends_on = CmdDefineXMLPicker
     data_type = data.MemorySize()
     types = {
@@ -316,7 +317,7 @@ class DomainXMLMemtuneMinGuaranteePicker(picker.PickerBase):
         mem_xml.text = size
 
 
-class DomainXMLMemtuneSwapHardLimitPicker(picker.PickerBase):
+class DomainXMLMemtuneSwapHardLimitPicker(picker.Picker):
     depends_on = CmdDefineXMLPicker
     data_type = data.MemorySize()
     types = {

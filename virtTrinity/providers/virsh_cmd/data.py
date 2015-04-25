@@ -14,7 +14,7 @@ from virtTrinity.providers.virsh_cmd.utils import xml_gen
 class VirshCmd(data.String):
     static_list = list(
         set(virsh.commands.keys()) -
-        set(['qemu-monitor-event', 'event']))
+        set(['qemu-monitor-event', 'event', 'nodesuspend']))
 
 
 class OptSet(data.Data):
@@ -256,3 +256,6 @@ class Nodeset(data.String):
 
     def validate(self, obj):
         return False
+
+class SuspendTarget(data.String):
+    static_list = ['mem', 'disk', 'hybrid']
