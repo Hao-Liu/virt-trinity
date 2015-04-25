@@ -1,6 +1,7 @@
 from virtTrinity import picker
 from virtTrinity import data as common_data
 
+# pylint: disable=no-name-in-module
 from virtTrinity.providers.virsh_cmd.picker.cmds import CmdQemuAttachChecker
 
 

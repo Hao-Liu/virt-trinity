@@ -50,13 +50,12 @@ class PickerBase(object):
             "Method '%s' should be implemented for class '%s'" %
             (name, cls_name))
 
-    def checkpoint(self):
+    def predict(self):
         cls_name = self.__class__.__name__
         name = inspect.stack()[0][3]
         raise NotImplementedError(
             "Method '%s' should be implemented for class '%s'" %
             (name, cls_name))
-
 
 
 class Picker(PickerBase):
@@ -158,7 +157,6 @@ def setup_picker_tree(module):
     pickers = dict(
         inspect.getmembers(sys.modules[module.__name__],
                            predicate=_picker_predicate))
-
 
     logging.debug('Found %s pickers: %s', len(pickers), pickers)
 

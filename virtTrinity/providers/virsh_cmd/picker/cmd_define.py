@@ -4,6 +4,8 @@ from virtTrinity import picker
 from virtTrinity import data as common_data
 
 from virtTrinity.providers.virsh_cmd import data
+
+# pylint: disable=no-name-in-module
 from virtTrinity.providers.virsh_cmd.picker.cmds import CmdDefineChecker
 
 

@@ -15,6 +15,7 @@ class VirshCmd(data.String):
     static_list = list(
         set(virsh.commands.keys()) -
         set(['qemu-monitor-event', 'event', 'nodesuspend']))
+    static_list = ['restore']
 
 
 class OptSet(data.Data):
@@ -256,6 +257,7 @@ class Nodeset(data.String):
 
     def validate(self, obj):
         return False
+
 
 class SuspendTarget(data.String):
     static_list = ['mem', 'disk', 'hybrid']
