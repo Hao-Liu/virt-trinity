@@ -8,6 +8,14 @@ from virtTrinity.utils import rnd
 from virtTrinity.utils import base
 
 
+class DataError(Exception):
+    pass
+
+
+class CanNotGenerateError(DataError):
+    pass
+
+
 class Data(object):
     mixin = None
     static_list = None
@@ -56,7 +64,11 @@ class Data(object):
             return random.choice(self.static_list)
         elif self.dynamic_list is not None:
             gen_func = getattr(self, 'dynamic_list')
-            return random.choice(gen_func())
+            try:
+                return random.choice(gen_func())
+            except IndexError:
+                raise CanNotGenerateError("No value to generate for '%s'" %
+                                          self.__class__.__name__)
         elif self.regex is not None:
             return rnd.regex(self.regex)
         elif self.bound is not None:
