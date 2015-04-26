@@ -198,6 +198,19 @@ class ActiveKernelPID(ActivePID):
     dynamic_list = staticmethod(base.kernel_pids)
 
 
+class Pair(Data):
+    def validate(self, obj):
+        if not isinstance(obj, types.TupleType):
+            return False
+        if len(obj) != 2:
+            return False
+        return all([isinstance(elem, types.StringType)
+                    for elem in obj])
+
+    def generate(self):
+        return (rnd.text(), rnd.text())
+
+
 ###################
 # HELPER FUNCTIONS:
 ###################
