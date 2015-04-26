@@ -3,6 +3,8 @@ import random
 import logging
 import inspect
 
+from virtTrinity import data
+
 
 class PickerError(Exception):
     pass
@@ -93,7 +95,7 @@ class Picker(PickerBase):
                 res = data_type.generate()
             else:
                 res = None
-        except ValueError, detail:
+        except (ValueError, data.CanNotGenerateError), detail:
             raise PickImpossibleError(
                 "Can't generate data. Picking is impossible: %s" %
                 detail)
