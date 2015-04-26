@@ -14,8 +14,13 @@ from virtTrinity.providers.virsh_cmd.utils import xml_gen
 class VirshCmd(data.String):
     static_list = list(
         set(virsh.commands.keys()) -
-        set(['qemu-monitor-event', 'event', 'nodesuspend']))
-    static_list = ['restore']
+        set(['qemu-monitor-event', 'event', 'nodesuspend', 'undefine',
+             'pool-undefine', 'net-undefine',
+             'iface-bridge', 'iface-unbridge', 'iface-undefine',
+             'vol-delete', 'vol-resize', 'vol-upload', 'vol-wipe',
+             'nodedev-destroy', 'nodedev-detach', 'nodedev-reset',
+             'secret-undefine', 'nwfilter-undefine',
+             ]))
 
 
 class OptSet(data.Data):
