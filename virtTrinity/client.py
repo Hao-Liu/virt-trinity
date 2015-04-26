@@ -201,6 +201,7 @@ class VirtTrinityApp(object):
         """
         Main loop to run tests and send/report tests results.
         """
+        os.environ["EDITOR"] = "echo"
         providers = self._process_providers()
 
         err_stat = Counter()
