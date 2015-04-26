@@ -266,3 +266,69 @@ class Nodeset(data.String):
 
 class SuspendTarget(data.String):
     static_list = ['mem', 'disk', 'hybrid']
+
+
+class Domain(data.String):
+    dynamic_list = staticmethod(virsh.domains)
+
+
+class VolumePath(data.String):
+    dynamic_list = staticmethod(virsh.all_volume_paths)
+
+
+class Pool(data.String):
+    dynamic_list = staticmethod(virsh.pools)
+
+
+class Interface(data.String):
+    dynamic_list = staticmethod(virsh.interfaces)
+
+
+class Network(data.String):
+    dynamic_list = staticmethod(virsh.networks)
+
+
+class Secret(data.String):
+    dynamic_list = staticmethod(virsh.secrets)
+
+
+class NodeDevice(data.String):
+    dynamic_list = staticmethod(virsh.node_devices)
+
+
+class Snapshot(data.String):
+    dynamic_list = staticmethod(virsh.all_snapshots)
+
+
+class Nwfilter(data.String):
+    dynamic_list = staticmethod(virsh.nwfilters)
+
+
+class PoolVolumePair(data.Pair):
+    def generate(self):
+        pairs = []
+        for pool in virsh.active_pools():
+            for vol in virsh.volumes(pool):
+                pairs.append((pool, vol))
+        return random.choice(pairs)
+
+    def validate(self, obj):
+        pool, vol = obj
+        if pool not in virsh.active_pools():
+            return False
+        return vol in virsh.volumes(pool)
+
+
+class DomainSnapshotPair(data.Pair):
+    def generate(self):
+        pairs = []
+        for dom in virsh.domains():
+            for snapshot in virsh.snapshots(dom):
+                pairs.append((dom, snapshot))
+        return random.choice(pairs)
+
+    def validate(self, obj):
+        dom, snapshot = obj
+        if dom not in virsh.domains():
+            return False
+        return snapshot in virsh.snapshots(dom)
