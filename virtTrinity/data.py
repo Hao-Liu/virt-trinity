@@ -168,6 +168,8 @@ class RegularFile(ExistPath):
     def generate(self):
         file_name = 'virt-trinity-regular-file'
         path = os.path.join('/tmp', file_name)
+        if os.path.exists(path):
+            os.remove(path)
         open(path, 'a').close()
         return path
 
