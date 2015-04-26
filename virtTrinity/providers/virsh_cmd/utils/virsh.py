@@ -295,3 +295,71 @@ def load_cmds(path=None):
 
 virsh_path = os.path.join(data_dir.USER_BASE_DIR, 'virsh')
 commands = load_cmds(virsh_path)
+
+
+def domains():
+    text = subprocess.check_output(['virsh', 'list', '--all', '--name'])
+    return [name.strip() for name in text.splitlines()[:-1]]
+
+
+def active_domains():
+    text = subprocess.check_output(['virsh', 'list', '--name'])
+    return [name.strip() for name in text.splitlines()[:-1]]
+
+
+def pools():
+    text = subprocess.check_output(['virsh', '-q', 'pool-list', '--all'])
+    return [line.split()[0] for line in text.splitlines()]
+
+
+def active_pools():
+    text = subprocess.check_output(['virsh', '-q', 'pool-list'])
+    return [line.split()[0] for line in text.splitlines()]
+
+
+def volumes(pool):
+    text = subprocess.check_output(['virsh', '-q', 'vol-list', pool])
+    return [line.split()[0] for line in text.splitlines()]
+
+
+def all_volume_paths():
+    for pool in active_pools():
+        text = subprocess.check_output(['virsh', '-q', 'vol-list', pool])
+        return [line.split()[1] for line in text.splitlines()]
+
+
+def interfaces():
+    text = subprocess.check_output(['virsh', '-q', 'iface-list', '--all'])
+    return [line.split()[0] for line in text.splitlines()]
+
+
+def networks():
+    text = subprocess.check_output(['virsh', '-q', 'net-list', '--all'])
+    return [line.split()[0] for line in text.splitlines()]
+
+
+def secrets():
+    text = subprocess.check_output(['virsh', '-q', 'secret-list'])
+    return [line.split()[0] for line in text.splitlines()]
+
+
+def node_devices():
+    text = subprocess.check_output(['virsh', '-q', 'nodedev-list'])
+    return [line.split()[0] for line in text.splitlines()]
+
+
+def nwfilters():
+    text = subprocess.check_output(['virsh', '-q', 'nwfilter-list'])
+    return [line.split()[0] for line in text.splitlines()]
+
+
+def snapshots(dom):
+    text = subprocess.check_output(['virsh', '-q', 'snapshot-list', dom])
+    return [line.split()[0] for line in text.splitlines()]
+
+
+def all_snapshots():
+    sshots = []
+    for dom in domains():
+        sshots.extend(snapshots(dom))
+    return sshots
