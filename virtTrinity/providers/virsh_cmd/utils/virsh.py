@@ -197,11 +197,7 @@ def option_from_line(line):
         name = name[2:]
 
     if type_name == '<string>':
-        known_types = ['domain', 'pool', 'file', 'vol']
-        if name in known_types:
-            type_name = name
-        else:
-            type_name = 'string'
+        type_name = 'string'
     elif type_name == '<number>':
         type_name = 'number'
     else:
