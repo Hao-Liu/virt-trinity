@@ -272,6 +272,10 @@ class Domain(data.String):
     dynamic_list = staticmethod(virsh.domains)
 
 
+class ActiveDomain(Domain):
+    dynamic_list = staticmethod(virsh.active_domains)
+
+
 class VolumePath(data.String):
     dynamic_list = staticmethod(virsh.all_volume_paths)
 
@@ -332,3 +336,18 @@ class DomainSnapshotPair(data.Pair):
         if dom not in virsh.domains():
             return False
         return snapshot in virsh.snapshots(dom)
+
+
+class DomainDiskPair(data.Pair):
+    def generate(self):
+        pairs = []
+        for dom in virsh.domains():
+            for blkdev in virsh.blkdevs(dom):
+                pairs.append((dom, blkdev))
+        return random.choice(pairs)
+
+    def validate(self, obj):
+        dom, blkdev = obj
+        if dom not in virsh.domains():
+            return False
+        return blkdev in virsh.blkdevs(dom)
