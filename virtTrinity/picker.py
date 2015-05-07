@@ -73,7 +73,7 @@ class Picker(PickerBase):
         else:
             chosen_type = random.choice(types)
 
-        logging.debug('Chosen type is %s', chosen_type)
+        logging.debug('Chosen type is %s in %s', chosen_type, types)
 
         # Get chosen data type instance and failure patterns.
         if chosen_type == 'other':
@@ -89,6 +89,7 @@ class Picker(PickerBase):
                     "Type '%s' don't have 'data_type' in class '%s'" %
                     (chosen_type, self.__class__.__name__))
         fail_patts = self.types[chosen_type]['patterns']
+        logging.debug('Fail patterns are %s', fail_patts)
 
         try:
             if data_type:
