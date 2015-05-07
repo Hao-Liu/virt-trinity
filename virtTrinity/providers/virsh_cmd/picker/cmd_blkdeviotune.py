@@ -3,7 +3,28 @@ from virtTrinity import data as common_data
 
 # pylint: disable=no-name-in-module
 from virtTrinity.providers.virsh_cmd.picker.cmds import CmdBlkdeviotuneChecker
+from virtTrinity.providers.virsh_cmd.utils import virsh
 from virtTrinity.providers.virsh_cmd import data
+
+
+class CmdBlkdeviotuneDomainDiskPairPicker(picker.Picker):
+    depends_on = CmdBlkdeviotuneChecker
+    data_type = common_data.Pair()
+    types = {
+        "positive": {
+            "patterns": None,
+            "data_type": data.DomainDiskPair(),
+        },
+        "other": {
+            "patterns": "missing persistent configuration for disk '.*'",
+        },
+    }
+
+    def prerequisite(self):
+        return 'domain' in self.test.options and 'device' in self.test.options
+
+    def apply(self, res):
+        self.test.options['domain'], self.test.options['device'] = res
 
 
 class CmdBlkdeviotuneDomainPicker(picker.Picker):
@@ -17,7 +38,7 @@ class CmdBlkdeviotuneDomainPicker(picker.Picker):
     }
 
     def prerequisite(self):
-        return 'domain' in self.test.options
+        return 'domain' in self.test.options and 'device' not in self.test.options
 
     def apply(self, res):
         self.test.options['domain'] = res
@@ -29,7 +50,10 @@ class CmdBlkdeviotuneReadBytesSecMaxPicker(picker.Picker):
     types = {
         "positive": {
             "patterns": None,
-            "data_type": common_data.Integer(),
+            "data_type": common_data.UnsignedInt(),
+        },
+        "other": {
+            "patterns": "Unable to parse integer parameter",
         },
     }
 
@@ -46,7 +70,10 @@ class CmdBlkdeviotuneTotalIopsSecPicker(picker.Picker):
     types = {
         "positive": {
             "patterns": None,
-            "data_type": common_data.Integer(),
+            "data_type": common_data.UnsignedInt(),
+        },
+        "other": {
+            "patterns": "Unable to parse integer parameter",
         },
     }
 
@@ -63,7 +90,10 @@ class CmdBlkdeviotuneWriteIopsSecPicker(picker.Picker):
     types = {
         "positive": {
             "patterns": None,
-            "data_type": common_data.Integer(),
+            "data_type": common_data.UnsignedInt(),
+        },
+        "other": {
+            "patterns": "Unable to parse integer parameter",
         },
     }
 
@@ -80,7 +110,10 @@ class CmdBlkdeviotuneReadBytesSecPicker(picker.Picker):
     types = {
         "positive": {
             "patterns": None,
-            "data_type": common_data.Integer(),
+            "data_type": common_data.UnsignedInt(),
+        },
+        "other": {
+            "patterns": "Unable to parse integer parameter",
         },
     }
 
@@ -97,7 +130,10 @@ class CmdBlkdeviotuneReadIopsSecMaxPicker(picker.Picker):
     types = {
         "positive": {
             "patterns": None,
-            "data_type": common_data.Integer(),
+            "data_type": common_data.UnsignedInt(),
+        },
+        "other": {
+            "patterns": "Unable to parse integer parameter",
         },
     }
 
@@ -114,7 +150,10 @@ class CmdBlkdeviotuneTotalIopsSecMaxPicker(picker.Picker):
     types = {
         "positive": {
             "patterns": None,
-            "data_type": common_data.Integer(),
+            "data_type": common_data.UnsignedInt(),
+        },
+        "other": {
+            "patterns": "Unable to parse integer parameter",
         },
     }
 
@@ -131,7 +170,10 @@ class CmdBlkdeviotuneWriteBytesSecMaxPicker(picker.Picker):
     types = {
         "positive": {
             "patterns": None,
-            "data_type": common_data.Integer(),
+            "data_type": common_data.UnsignedInt(),
+        },
+        "other": {
+            "patterns": "Unable to parse integer parameter",
         },
     }
 
@@ -148,7 +190,10 @@ class CmdBlkdeviotuneWriteIopsSecMaxPicker(picker.Picker):
     types = {
         "positive": {
             "patterns": None,
-            "data_type": common_data.Integer(),
+            "data_type": common_data.UnsignedInt(),
+        },
+        "other": {
+            "patterns": "Unable to parse integer parameter",
         },
     }
 
@@ -165,7 +210,10 @@ class CmdBlkdeviotuneReadIopsSecPicker(picker.Picker):
     types = {
         "positive": {
             "patterns": None,
-            "data_type": common_data.Integer(),
+            "data_type": common_data.UnsignedInt(),
+        },
+        "other": {
+            "patterns": "Unable to parse integer parameter",
         },
     }
 
@@ -182,7 +230,10 @@ class CmdBlkdeviotuneWriteBytesSecPicker(picker.Picker):
     types = {
         "positive": {
             "patterns": None,
-            "data_type": common_data.Integer(),
+            "data_type": common_data.UnsignedInt(),
+        },
+        "other": {
+            "patterns": "Unable to parse integer parameter",
         },
     }
 
@@ -199,7 +250,10 @@ class CmdBlkdeviotuneTotalBytesSecMaxPicker(picker.Picker):
     types = {
         "positive": {
             "patterns": None,
-            "data_type": common_data.Integer(),
+            "data_type": common_data.UnsignedInt(),
+        },
+        "other": {
+            "patterns": "Unable to parse integer parameter",
         },
     }
 
@@ -216,7 +270,10 @@ class CmdBlkdeviotuneTotalBytesSecPicker(picker.Picker):
     types = {
         "positive": {
             "patterns": None,
-            "data_type": common_data.Integer(),
+            "data_type": common_data.UnsignedInt(),
+        },
+        "other": {
+            "patterns": "Unable to parse integer parameter",
         },
     }
 
@@ -233,7 +290,10 @@ class CmdBlkdeviotuneSizeIopsSecPicker(picker.Picker):
     types = {
         "positive": {
             "patterns": None,
-            "data_type": common_data.Integer(),
+            "data_type": common_data.UnsignedInt(),
+        },
+        "other": {
+            "patterns": "Unable to parse integer parameter",
         },
     }
 
@@ -242,3 +302,19 @@ class CmdBlkdeviotuneSizeIopsSecPicker(picker.Picker):
 
     def apply(self, res):
         self.test.options['size-iops-sec'] = res
+
+
+class CmdBlkdeviotuneLiveSetter(picker.Setter):
+    depends_on = CmdBlkdeviotuneChecker
+    patterns = {
+        "false&set": "domain is not running",
+    }
+
+    def prerequisite(self):
+        return True
+
+    def predicate(self):
+        return virsh.domain_is_active(self.test.options['domain'])
+
+    def apply(self, res):
+        self.test.options['live'] = res
