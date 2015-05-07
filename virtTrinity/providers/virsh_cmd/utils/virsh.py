@@ -315,6 +315,10 @@ def active_domains():
     return [name.strip() for name in text.splitlines()[:-1]]
 
 
+def domain_is_active(dom):
+    return dom in active_domains()
+
+
 def pools():
     text = subprocess.check_output(['virsh', '-q', 'pool-list', '--all'])
     return [line.split()[0] for line in text.splitlines()]
@@ -363,6 +367,11 @@ def nwfilters():
 
 def snapshots(dom):
     text = subprocess.check_output(['virsh', '-q', 'snapshot-list', dom])
+    return [line.split()[0] for line in text.splitlines()]
+
+
+def blkdevs(dom):
+    text = subprocess.check_output(['virsh', '-q', 'domblklist', dom])
     return [line.split()[0] for line in text.splitlines()]
 
 
