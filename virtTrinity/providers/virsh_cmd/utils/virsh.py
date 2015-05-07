@@ -34,6 +34,14 @@ EXCLUSIVE_OPTIONS = {
     'blkdeviotune': [
         ('current', 'config'),
         ('current', 'live'),
+        ('total-iops-sec', 'write-iops-sec'),
+        ('total-iops-sec', 'read-iops-sec'),
+        ('total-iops-sec-max', 'write-iops-sec-max'),
+        ('total-iops-sec-max', 'read-iops-sec-max'),
+        ('total-bytes-sec', 'write-bytes-sec'),
+        ('total-bytes-sec', 'read-bytes-sec'),
+        ('total-bytes-sec-max', 'write-bytes-sec-max'),
+        ('total-bytes-sec-max', 'read-bytes-sec-max'),
     ],
     'blkiotune': [
         ('current', 'config'),

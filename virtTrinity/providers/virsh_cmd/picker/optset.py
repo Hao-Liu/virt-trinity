@@ -20,6 +20,7 @@ class OptSetPicker(picker.Picker):
         "exclusive": {
             "patterns": [
                 r"Options .* and .* are mutually exclusive",
+                r"cannot be set at the same time",
             ],
             "data_type": data.ExclusiveOptSet(),
         },
