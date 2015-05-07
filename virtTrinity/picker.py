@@ -185,10 +185,11 @@ def pick(item, root=None):
                         item.fail_patts.add(fail_patt)
                     elif type(fail_patt) == list:
                         item.fail_patts |= set(fail_patt)
+                else:
+                    if hasattr(picker_class, 'children'):
+                        for c_name, c_picker in picker_class.children.items():
+                            picker_classes[c_name] = c_picker
                 del picker_classes[name]
-                if hasattr(picker_class, 'children'):
-                    for c_name, c_picker in picker_class.children.items():
-                        picker_classes[c_name] = c_picker
         logging.debug('Picked %d from %d', picked_count, len(picker_classes))
         if picked_count == 0:
             break
