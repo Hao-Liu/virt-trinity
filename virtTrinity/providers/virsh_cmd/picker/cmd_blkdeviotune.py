@@ -35,6 +35,9 @@ class CmdBlkdeviotuneDomainPicker(picker.Picker):
             "patterns": None,
             "data_type": data.Domain(),
         },
+        "other": {
+            "patterns": "no domain with matching name '.*'",
+        },
     }
 
     def prerequisite(self):
