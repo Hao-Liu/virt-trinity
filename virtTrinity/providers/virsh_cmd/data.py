@@ -272,6 +272,20 @@ class Domain(data.String):
     dynamic_list = staticmethod(virsh.domains)
 
 
+class BlkIO(data.String):
+    def generate(self):
+        dom = self._params['test'].options['domain']
+        cnt = rnd.count(min_inc=1)
+        parts = []
+        for _ in xrange(cnt):
+            parts.append('/dev/' + random.choice(virsh.blkdevs(dom)))
+            parts.append(str(rnd.int_exp()))
+        return ','.join(parts)
+
+    def validate(self, obj):
+        return False
+
+
 class ActiveDomain(Domain):
     dynamic_list = staticmethod(virsh.active_domains)
 
