@@ -12,7 +12,14 @@ class CmdDestroyDomainPicker(picker.Picker):
     types = {
         "positive": {
             "patterns": None,
-            "data_type": data.Domain(),
+            "data_type": data.ActiveDomain(),
+        },
+        "inactive": {
+            "patterns": 'domain is not running',
+            "data_type": ~data.ActiveDomain(),
+        },
+        "other": {
+            "patterns": "no domain with matching name '.*'",
         },
     }
 
