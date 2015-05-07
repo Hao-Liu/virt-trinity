@@ -126,6 +126,48 @@ class Checker(PickerBase):
         return fail_patts
 
 
+class Setter(PickerBase):
+    def pick(self, positive_weight=0.999):
+        types = {
+            'true&set': None,
+            'true&unset': None,
+            'false&set': None,
+            'false&unset': None,
+        }
+        pos_types = []
+        neg_types = []
+        pred_func = getattr(self, 'predicate')
+        patterns = getattr(self, 'patterns')
+
+        pred = 'true' if pred_func() else 'false'
+        for tp in types:
+            if tp in patterns and patterns[tp] is not None:
+                types[tp] = patterns[tp]
+                if tp.startswith(pred):
+                    neg_types.append(tp)
+            else:
+                if tp.startswith(pred):
+                    pos_types.append(tp)
+
+        if pos_types:
+            if neg_types:
+                if random.random() < positive_weight:
+                    chosen_type = random.choice(pos_types)
+                else:
+                    chosen_type = random.choice(neg_types)
+            else:
+                chosen_type = random.choice(pos_types)
+        else:
+            if neg_types:
+                chosen_type = random.choice(neg_types)
+            else:
+                raise PickImpossibleError("No valid choice")
+
+        should_set = chosen_type.split('&')[1] == 'set'
+        self.apply(should_set)
+        return types[chosen_type]
+
+
 def pick(item, root=None):
     picker_classes = {root.__name__: root}
     logging.debug('Start picking')
