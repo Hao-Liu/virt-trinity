@@ -59,6 +59,8 @@ class Item(object):
                 name = base.escape(name)
                 if opt is True:
                     cmdline += ' --%s' % name
+                elif opt is False:
+                    pass
                 else:
                     opt = base.escape(opt)
                     cmdline += ' --%s' % name
