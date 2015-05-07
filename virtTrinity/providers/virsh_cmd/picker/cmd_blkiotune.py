@@ -3,6 +3,7 @@ from virtTrinity import data as common_data
 
 # pylint: disable=no-name-in-module
 from virtTrinity.providers.virsh_cmd.picker.cmds import CmdBlkiotuneChecker
+from virtTrinity.providers.virsh_cmd.utils import virsh
 from virtTrinity.providers.virsh_cmd import data
 
 
@@ -14,6 +15,9 @@ class CmdBlkiotuneDomainPicker(picker.Picker):
             "patterns": None,
             "data_type": data.Domain(),
         },
+        "other": {
+            "patterns": "no domain with matching name '.*'",
+        },
     }
 
     def prerequisite(self):
@@ -24,12 +28,18 @@ class CmdBlkiotuneDomainPicker(picker.Picker):
 
 
 class CmdBlkiotuneDeviceReadIopsSecPicker(picker.Picker):
-    depends_on = CmdBlkiotuneChecker
+    depends_on = CmdBlkiotuneDomainPicker
     data_type = common_data.String()
     types = {
         "positive": {
             "patterns": None,
-            "data_type": common_data.String(),
+            "data_type": data.BlkIO(),
+        },
+        "other": {
+            "patterns": [
+                r"unable to parse blkio device 'device_read_iops_sec' '.*'",
+                r"invalid value '.*' for parameter 'device_read_iops_sec' of device '.*'",
+            ],
         },
     }
 
@@ -41,12 +51,18 @@ class CmdBlkiotuneDeviceReadIopsSecPicker(picker.Picker):
 
 
 class CmdBlkiotuneDeviceWeightsPicker(picker.Picker):
-    depends_on = CmdBlkiotuneChecker
+    depends_on = CmdBlkiotuneDomainPicker
     data_type = common_data.String()
     types = {
-        "positive": {
+        "apositive": {
             "patterns": None,
-            "data_type": common_data.String(),
+            "data_type": data.BlkIO(),
+        },
+        "other": {
+            "patterns": [
+                r"unable to parse blkio device 'device_weight' '.*'",
+                r"invalid value '.*' for parameter 'device_weight' of device '.*'",
+            ],
         },
     }
 
@@ -63,7 +79,7 @@ class CmdBlkiotuneWeightPicker(picker.Picker):
     types = {
         "positive": {
             "patterns": None,
-            "data_type": common_data.Integer(),
+            "data_type": common_data.PositiveInt(),
         },
     }
 
@@ -75,12 +91,18 @@ class CmdBlkiotuneWeightPicker(picker.Picker):
 
 
 class CmdBlkiotuneDeviceWriteIopsSecPicker(picker.Picker):
-    depends_on = CmdBlkiotuneChecker
+    depends_on = CmdBlkiotuneDomainPicker
     data_type = common_data.String()
     types = {
         "positive": {
             "patterns": None,
-            "data_type": common_data.String(),
+            "data_type": data.BlkIO(),
+        },
+        "other": {
+            "patterns": [
+                r"unable to parse blkio device 'device_write_iops_sec' '.*'",
+                r"invalid value '.*' for parameter 'device_write_iops_sec' of device '.*'",
+            ],
         },
     }
 
@@ -92,12 +114,18 @@ class CmdBlkiotuneDeviceWriteIopsSecPicker(picker.Picker):
 
 
 class CmdBlkiotuneDeviceReadBytesSecPicker(picker.Picker):
-    depends_on = CmdBlkiotuneChecker
+    depends_on = CmdBlkiotuneDomainPicker
     data_type = common_data.String()
     types = {
         "positive": {
             "patterns": None,
-            "data_type": common_data.String(),
+            "data_type": data.BlkIO(),
+        },
+        "other": {
+            "patterns": [
+                r"unable to parse blkio device 'device_read_bytes_sec' '.*'",
+                r"invalid value '.*' for parameter 'device_read_bytes_sec' of device '.*'",
+            ],
         },
     }
 
@@ -109,12 +137,18 @@ class CmdBlkiotuneDeviceReadBytesSecPicker(picker.Picker):
 
 
 class CmdBlkiotuneDeviceWriteBytesSecPicker(picker.Picker):
-    depends_on = CmdBlkiotuneChecker
+    depends_on = CmdBlkiotuneDomainPicker
     data_type = common_data.String()
     types = {
         "positive": {
             "patterns": None,
-            "data_type": common_data.String(),
+            "data_type": data.BlkIO(),
+        },
+        "other": {
+            "patterns": [
+                r"unable to parse blkio device 'device_write_bytes_sec' '.*'",
+                r"invalid value '.*' for parameter 'device_write_bytes_sec' of device '.*'",
+            ],
         },
     }
 
@@ -123,3 +157,19 @@ class CmdBlkiotuneDeviceWriteBytesSecPicker(picker.Picker):
 
     def apply(self, res):
         self.test.options['device-write-bytes-sec'] = res
+
+
+class CmdBlkdeviotuneLiveSetter(picker.Setter):
+    depends_on = CmdBlkiotuneChecker
+    patterns = {
+        "false&set": "domain is not running",
+    }
+
+    def prerequisite(self):
+        return True
+
+    def predicate(self):
+        return virsh.domain_is_active(self.test.options['domain'])
+
+    def apply(self, res):
+        self.test.options['live'] = res
