@@ -365,3 +365,34 @@ class DomainDiskPair(data.Pair):
         if dom not in virsh.domains():
             return False
         return blkdev in virsh.blkdevs(dom)
+
+
+class ActiveDomainDiskPair(DomainDiskPair):
+    def generate(self):
+        pairs = []
+        for dom in virsh.active_domains():
+            for blkdev in virsh.blkdevs(dom):
+                pairs.append((dom, blkdev))
+        return random.choice(pairs)
+
+    def validate(self, obj):
+        dom, blkdev = obj
+        if dom not in virsh.active_domains():
+            return False
+        return blkdev in virsh.blkdevs(dom)
+
+
+class ActiveDomainActiveDiskPair(ActiveDomainDiskPair):
+    def generate(self):
+        pairs = []
+        for dom in virsh.active_domains():
+            for blkdev in virsh.blkdevs(dom):
+                if virsh.blk_active(dom, blkdev):
+                    pairs.append((dom, blkdev))
+        return random.choice(pairs)
+
+    def validate(self, obj):
+        dom, blkdev = obj
+        if dom not in virsh.active_domains():
+            return False
+        return blkdev in virsh.blkdevs(dom)
