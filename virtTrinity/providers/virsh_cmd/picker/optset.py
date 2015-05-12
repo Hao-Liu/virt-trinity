@@ -21,6 +21,7 @@ class OptSetPicker(picker.Picker):
             "patterns": [
                 r"Options .* and .* are mutually exclusive",
                 r"cannot be set at the same time",
+                r"conflict between .*",
             ],
             "data_type": data.ExclusiveOptSet(),
         },
