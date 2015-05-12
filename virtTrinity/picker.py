@@ -61,7 +61,7 @@ class PickerBase(object):
 
 
 class Picker(PickerBase):
-    def pick(self, positive_weight=0.999):
+    def pick(self, positive_weight=0.9):
         types = self.types.keys()
         if not types:
             raise ValueError("Property 'types' is not set for %s" %
@@ -113,7 +113,7 @@ class Picker(PickerBase):
 
 
 class Checker(PickerBase):
-    def pick(self, positive_weight=0.999):
+    def pick(self, positive_weight=0.9):
         types = self.types.keys()
         if not types:
             raise ValueError("Property 'types' is not set for %s" %
@@ -128,7 +128,7 @@ class Checker(PickerBase):
 
 
 class Setter(PickerBase):
-    def pick(self, positive_weight=0.999):
+    def pick(self, positive_weight=0.9):
         types = {
             'true&set': None,
             'true&unset': None,
