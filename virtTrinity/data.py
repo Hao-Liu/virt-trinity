@@ -59,6 +59,7 @@ class Data(object):
         return self._params
 
     def generate(self):
+        MAX_RETRY = 20
         known_attrs = ['static_list', 'dynamic_list', 'regex', 'bound']
         if self.static_list is not None:
             return random.choice(self.static_list)
@@ -80,8 +81,13 @@ class Data(object):
             data_a, data_b, operator = self.mixin
             if operator == 'sub':
                 res = data_a.generate()
+                cnt = 0
                 while data_b.validate(res):
+                    cnt += 1
                     res = data_a.generate()
+                    if cnt > MAX_RETRY:
+                        raise CanNotGenerateError(
+                            "Retry %s times, abort generation" % MAX_RETRY)
             else:
                 raise Exception("Unknown operator '%s'" % operator)
             return res
