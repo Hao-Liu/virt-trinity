@@ -388,6 +388,11 @@ def blkdevs(dom):
     return [line.split()[0] for line in text.splitlines()]
 
 
+def blk_active(dom, dev):
+    text = subprocess.check_output(['virsh', '-q', 'blockjob', dom, dev])
+    return not text.startswith("No current block job for")
+
+
 def all_snapshots():
     sshots = []
     for dom in domains():
