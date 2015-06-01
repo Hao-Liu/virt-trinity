@@ -278,7 +278,10 @@ class BlkIO(data.String):
         cnt = rnd.count(min_inc=1)
         parts = []
         for _ in xrange(cnt):
-            parts.append('/dev/' + random.choice(virsh.blkdevs(dom)))
+            try:
+                parts.append('/dev/' + random.choice(virsh.blkdevs(dom)))
+            except IndexError:
+                raise data.CanNotGenerateError('No valid blkdev for domain %s' % dom)
             parts.append(str(rnd.int_exp()))
         return ','.join(parts)
 
@@ -343,7 +346,11 @@ class DomainSnapshotPair(data.Pair):
         for dom in virsh.domains():
             for snapshot in virsh.snapshots(dom):
                 pairs.append((dom, snapshot))
-        return random.choice(pairs)
+
+        if pairs:
+            return random.choice(pairs)
+        else:
+            raise data.CanNotGenerateError('No valid domain-snapshot pairs')
 
     def validate(self, obj):
         dom, snapshot = obj
