@@ -1,4 +1,5 @@
 import sys
+import types as mod_types
 import random
 import logging
 import inspect
@@ -182,9 +183,9 @@ def pick(item, root=None):
                 picked_count += 1
                 fail_patt = picker.pick()
                 if fail_patt:
-                    if type(fail_patt) == str:
+                    if isinstance(fail_patt, mod_types.StringType):
                         item.fail_patts.add(fail_patt)
-                    elif type(fail_patt) == list:
+                    elif isinstance(fail_patt, mod_types.ListType):
                         item.fail_patts |= set(fail_patt)
                 else:
                     if hasattr(picker_class, 'children'):

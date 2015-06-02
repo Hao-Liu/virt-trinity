@@ -1,3 +1,4 @@
+import types
 import random
 import string
 import logging
@@ -130,13 +131,13 @@ def regex(re_str):
     def _randomize(stack):
         if len(stack) == 3:
             sub_stacks, cmin, cmax = stack
-            assert type(sub_stacks) == tuple
+            assert isinstance(sub_stacks, types.TupleType)
             sub_stacks = random.choice(sub_stacks)
-            assert type(sub_stacks) == list
+            assert isinstance(sub_stacks, types.ListType)
         elif len(stack) == 4:
             chose_str, cmin, cmax, neg = stack
             sub_stacks = None
-            assert type(chose_str) == str
+            assert isinstance(chose_str, types.StringType)
             if neg:
                 chose_str = ''.join(ALL_CHARS - set(chose_str))
 

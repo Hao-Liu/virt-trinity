@@ -25,7 +25,7 @@ class VirshCmd(data.String):
 
 class OptSet(data.Data):
     def validate(self, obj):
-        return (type(obj) is set and
+        return (isinstance(obj, set) and
                 all([re.match(r'\w.*', i) for i in obj]))
 
     def generate(self):
