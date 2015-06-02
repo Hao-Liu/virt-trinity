@@ -269,6 +269,9 @@ class VirtTrinityApp(object):
             logging.debug('Failed to send result to server: %s', detail)
 
     def run_tests(self):
+        """
+        Main loop to run tests
+        """
         while not self.exiting:
             item = random.choice(self.providers.values()).run_once()
             self.last_item = item
@@ -280,7 +283,7 @@ class VirtTrinityApp(object):
 
     def run(self):
         """
-        Main loop to run tests and send/report tests results.
+        Main loop to update screen and send tests results.
         """
         os.environ["EDITOR"] = "echo"
         last_thread = None
