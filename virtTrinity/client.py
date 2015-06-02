@@ -85,6 +85,8 @@ class VirtTrinityApp(object):
         }
         self.exiting = False
         self.pause = False
+        self.scroll_x = 0
+        self.scroll_y = 0
         self.test_thread = threading.Thread(
             target=self.run_tests,
         )
@@ -187,11 +189,18 @@ class VirtTrinityApp(object):
                 else:
                     xml = str(item.xml)
                 lines += xml
+            if self.scroll_y < 0:
+                self.scroll_y = 0
+            if self.scroll_x < 0:
+                self.scroll_x = 0
+            lines = lines.splitlines()[self.scroll_y:]
             cur_y = 1
-            for line in lines.splitlines():
+            for line in lines:
                 line = line.replace('\t', '  ')
-                if len(line) > (width - 2):
-                    line = line[:(width - 2)]
+                if len(line) > width - 2 + self.scroll_x:
+                    line = line[self.scroll_x:(width - 2 + self.scroll_x)]
+                else:
+                    line = line[self.scroll_x:]
                 pad.addstr(cur_y, 1, line)
                 cur_y += 1
                 if cur_y == height:
@@ -318,6 +327,14 @@ class VirtTrinityApp(object):
                     idx = self.stats.keys().index(self.cur_counter)
                     new_idx = (idx - 1) % len(self.stats)
                     self.cur_counter = self.stats.keys()[new_idx]
+                elif ch == curses.KEY_UP:
+                    self.scroll_y -= 1
+                elif ch == curses.KEY_DOWN:
+                    self.scroll_y += 1
+                elif ch == curses.KEY_LEFT:
+                    self.scroll_x -= 1
+                elif ch == curses.KEY_RIGHT:
+                    self.scroll_x += 1
 
                 if len(self.send_queue) > 200:
                     send_thread = threading.Thread(
