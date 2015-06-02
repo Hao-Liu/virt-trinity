@@ -146,8 +146,3 @@ def run(cmdline, timeout=10):
             pgid = os.getpgid(process.pid)
             os.killpg(pgid, signal.SIGKILL)
             result.exit_status = "timeout"
-
-        # Reset tty to clean console caused by killing console or editor
-        subprocess.call(["stty", "sane"])
-        # Restore disabled scrolling caused by killing editor
-        subprocess.call(["tput", "rmcup"])
