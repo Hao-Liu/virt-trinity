@@ -78,3 +78,16 @@ class Item(object):
                 ElementTree.tostring(self.xml.find('./cputune')))
             print mxml.toprettyxml()
         self.res.pprint()
+
+    def save(self, filename):
+        with open(filename, 'w') as fp:
+            lines = ''
+            lines = str(self.res)
+            if self.xml is not None:
+                if isinstance(self.xml, ElementTree.Element):
+                    xml = minidom.parseString(
+                        ElementTree.tostring(self.xml)).toprettyxml()
+                else:
+                    xml = str(self.xml)
+                lines += xml
+            fp.write(lines)

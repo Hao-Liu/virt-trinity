@@ -85,6 +85,8 @@ class VirtTrinityApp(object):
         }
         self.exiting = False
         self.pause = False
+        self.setting_watch = False
+        self.watching = ''
         self.scroll_x = 0
         self.scroll_y = 0
         self.test_thread = threading.Thread(
@@ -103,12 +105,13 @@ class VirtTrinityApp(object):
         res = item.res
         fail_patts = item.fail_patts
 
-        test_pattern = 'PATTERNS.TO.TEST.ON'
-
         self.counters['cnt'] += 1
         if res:
             if res.exit_status == 'timeout':
                 self.counters['timeout'] += 1
+
+            if self.watching and self.watching in res.stderr:
+                self.pause = True
 
             if fail_patts:
                 if res.exit_status == 'success':
@@ -128,9 +131,6 @@ class VirtTrinityApp(object):
                 elif res.exit_status == 'failure':
                     self.stats['failure'][res.stderr] += 1
                     self.counters['failure'] += 1
-                    if test_pattern in res.stderr:
-                        item.pprint()
-                        exit(0)
         else:
             self.counters['skip'] += 1
 
@@ -208,6 +208,63 @@ class VirtTrinityApp(object):
         pad.box()
         pad.addstr(0, 10, ' LAST RESULT ')
         pad.refresh(0, 0, 0, maxx / 2, maxy, maxx)
+
+    def _monitor_key(self):
+        """
+        Monitor key press
+        """
+        ch = self.screen.getch()
+        if ch == ord('q'):
+            self.exiting = True
+        elif ch == ord('p'):
+            self.pause = not self.pause
+        elif ch == ord('n'):
+            idx = self.stats.keys().index(self.cur_counter)
+            new_idx = (idx + 1) % len(self.stats)
+            self.cur_counter = self.stats.keys()[new_idx]
+        elif ch == ord('N'):
+            idx = self.stats.keys().index(self.cur_counter)
+            new_idx = (idx - 1) % len(self.stats)
+            self.cur_counter = self.stats.keys()[new_idx]
+        elif ch == ord('w'):
+            self.pause = True
+            self.setting_watch = True
+        elif ch == ord('s'):
+            self.last_item.save('saved_item.txt')
+        elif ch == curses.KEY_UP:
+            self.scroll_y -= 1
+        elif ch == curses.KEY_DOWN:
+            self.scroll_y += 1
+        elif ch == curses.KEY_LEFT:
+            self.scroll_x -= 1
+        elif ch == curses.KEY_RIGHT:
+            self.scroll_x += 1
+
+    def _show_watch_setting(self):
+        """
+        Show watch setup window
+        """
+        maxy, maxx = self.screen.getmaxyx()
+        width, height = max(len(self.watching) + 10, 20), 3
+
+        pad = curses.newpad(height, width)
+        pad.box()
+        pad.addstr(0, 10, ' WATCH ')
+        pad.addstr(1, 5, self.watching)
+        pad.refresh(0, 0, (maxy - height) / 2, (maxx - width) / 2,
+                    (maxy + height) / 2, (maxx + width) / 2)
+
+    def _monitor_watch_input(self):
+        ch = self.screen.getch()
+        if ch != -1:
+            if ch == ord('\n'):
+                self.setting_watch = False
+                self.pause = False
+            elif ch == curses.KEY_BACKSPACE:
+                if self.watching:
+                    self.watching = self.watching[:-1]
+            else:
+                self.watching += chr(ch)
 
     def _show_exit(self):
         """
@@ -308,35 +365,17 @@ class VirtTrinityApp(object):
 
         try:
             while True:
-                self._show_report()
-                self._show_last_result()
-                if last_thread:
-                    last_thread.join()
-
-                # Monitor key press
-                ch = self.screen.getch()
-                if ch == ord('q'):
-                    break
-                elif ch == ord('p'):
-                    self.pause = not self.pause
-                elif ch == ord('n'):
-                    idx = self.stats.keys().index(self.cur_counter)
-                    new_idx = (idx + 1) % len(self.stats)
-                    self.cur_counter = self.stats.keys()[new_idx]
-                elif ch == ord('N'):
-                    idx = self.stats.keys().index(self.cur_counter)
-                    new_idx = (idx - 1) % len(self.stats)
-                    self.cur_counter = self.stats.keys()[new_idx]
-                elif ch == curses.KEY_UP:
-                    self.scroll_y -= 1
-                elif ch == curses.KEY_DOWN:
-                    self.scroll_y += 1
-                elif ch == curses.KEY_LEFT:
-                    self.scroll_x -= 1
-                elif ch == curses.KEY_RIGHT:
-                    self.scroll_x += 1
+                if self.setting_watch:
+                    self._show_watch_setting()
+                    self._monitor_watch_input()
+                else:
+                    self._show_report()
+                    self._show_last_result()
+                    self._monitor_key()
 
                 if len(self.send_queue) > 200:
+                    if last_thread:
+                        last_thread.join()
                     send_thread = threading.Thread(
                         target=self.send,
                         args=(self.send_queue,)
@@ -344,6 +383,9 @@ class VirtTrinityApp(object):
                     send_thread.start()
                     last_thread = send_thread
                     self.send_queue = []
+
+                if self.exiting:
+                    break
         except KeyboardInterrupt:
             pass
         finally:
