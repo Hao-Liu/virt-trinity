@@ -182,6 +182,11 @@ class VirtTrinityApp(object):
         if item:
             lines = ''
             lines = str(item.res)
+            if item.fail_patts:
+                lines += 'fail patterns:\n'
+                for patt in item.fail_patts:
+                    lines += '  %s\n' % patt
+
             if item.xml is not None:
                 if isinstance(item.xml, ElementTree.Element):
                     xml = minidom.parseString(
