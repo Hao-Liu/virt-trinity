@@ -276,13 +276,13 @@ class VirtTrinityApp(object):
         Show existing pad in the center of screen
         """
         maxy, maxx = self.screen.getmaxyx()
-        width, height = 30, 5
+        width, height = 20, 3
 
         pad = curses.newpad(height, width)
         pad.box()
-        pad.addstr(2, 10, ' EXISTING... ')
-        pad.refresh(0, 0, maxy / 2 - 3, maxx / 2 - 15,
-                    maxy / 2 + 3, maxx / 2 + 15)
+        pad.addstr(1, 5, 'EXISTING...')
+        pad.refresh(0, 0, (maxy - height) / 2, (maxx - width) / 2,
+                    (maxy + height) / 2, (maxx + width) / 2)
 
     def _process_providers(self):
         """
