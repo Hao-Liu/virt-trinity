@@ -208,6 +208,19 @@ class AvailDomainType(DomainType):
     static_list = ['qemu', 'kqemu', 'kvm', 'xen']
 
 
+class DomainArch(data.String):
+    static_list = ['armv7l', 'aarch64', 'i686', 'x86_64',
+                   'mips', 'ppc', 'ppc64', 'ppc64le',
+                   's390', 's390x', 'sparc']
+
+
+class AvailDomainArch(DomainArch):
+    arch_set = set()
+    for elem in virsh.capabilities().findall('./guest/arch'):
+        arch_set.add(elem.attrib['name'])
+    static_list = list(arch_set)
+
+
 UNIT_MAP = {
     "b": 1,
     "byte": 1,

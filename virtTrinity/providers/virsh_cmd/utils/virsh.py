@@ -4,6 +4,8 @@ import json
 import logging
 import subprocess
 
+from xml.etree import ElementTree
+
 from virtTrinity import data_dir
 
 
@@ -391,6 +393,11 @@ def blkdevs(dom):
 def blk_active(dom, dev):
     text = subprocess.check_output(['virsh', '-q', 'blockjob', dom, dev])
     return not text.startswith("No current block job for")
+
+
+def capabilities():
+    text = subprocess.check_output(['virsh', 'capabilities'])
+    return ElementTree.fromstring(text)
 
 
 def all_snapshots():

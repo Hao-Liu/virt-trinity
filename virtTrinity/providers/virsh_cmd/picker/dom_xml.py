@@ -12,6 +12,9 @@ class DomainXMLTypeChecker(picker.Checker):
         "positive": {
             "patterns": None,
         },
+        "unsupported-arch": {
+            "patterns": "could not find capabilities for .*",
+        },
         "other": {
             "patterns": "unexpected domain type .*, expecting one of these: .*",
         }
@@ -23,10 +26,14 @@ class DomainXMLTypeChecker(picker.Checker):
 
     def predict(self):
         dom_type = self.test.xml.get('type')
-        if data.AvailDomainType().validate(dom_type):
-            return 'positive'
+        dom_arch = self.test.xml.find('./os/type').get('type')
+        if data.AvailDomainArch().validate(dom_arch):
+            if data.AvailDomainType().validate(dom_type):
+                return 'positive'
+            else:
+                return 'other'
         else:
-            return 'other'
+            return 'unsupported-arch'
 
 
 class DomainXMLMemSizePicker(picker.Picker):
