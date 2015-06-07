@@ -2,6 +2,7 @@ import re
 import os
 import string
 import random
+import itertools
 
 from virtTrinity import data
 from virtTrinity.utils import rnd
@@ -181,7 +182,14 @@ class LibvirtXML(XML):
 
 class DomainXML(LibvirtXML):
     def generate(self):
-        return xml_gen.rnd_xml('domain')
+        dom_type, arch, os_type, machine = self._params['test'].type_arch_ostype_machine
+        params = {
+            'dom_types': [dom_type],
+            'archs': [arch],
+            'os_types': [os_type],
+            'machines': [machine],
+        }
+        return xml_gen.rnd_xml('domain', params=params)
 
     def validate(self, obj):
         tmp_file = '/tmp/virt-trinity-validate.xml'
@@ -195,6 +203,41 @@ class DomainXML(LibvirtXML):
                 os.remove(tmp_file)
             except IOError:
                 pass
+
+
+class DomainTypeArchOstypeMachine(data.Data):
+    def generate(self):
+        dom_types = [
+            'qemu', 'kqemu', 'kvm', 'xen', 'lxc', 'uml',
+            'openvz', 'test', 'vmware', 'hyperv', 'vbox',
+            'phyp', 'parallels', 'bhyve']
+        archs = ['x86_64', 'i686']
+        os_types = ['hvm']
+        machines = ['pc']
+        return random.choice(
+            list(itertools.product(dom_types, archs, os_types, machines)))
+
+    def validate(self, obj):
+        dom_types = [
+            'qemu', 'kqemu', 'kvm', 'xen', 'lxc', 'uml',
+            'openvz', 'test', 'vmware', 'hyperv', 'vbox',
+            'phyp', 'parallels', 'bhyve']
+        archs = ['x86_64', 'i686']
+        os_types = ['hvm']
+        machines = ['pc']
+        return obj in list(itertools.product(dom_types, archs, os_types, machines))
+
+
+class AvailDomainTypeArchOstypeMachine(DomainTypeArchOstypeMachine):
+    known_guests = set()
+    for guest in virsh.capabilities().findall('./guest'):
+        os_type = guest.find('./os_type').text
+        dom_arch = guest.find('./arch').get('name')
+        machines = [m.text for m in guest.findall('./arch/machine')]
+        dom_types = [dom.get('type') for dom in guest.findall('./arch/domain')]
+        known_guests.update(
+            set(itertools.product(dom_types, [dom_arch], [os_type], machines)))
+    static_list = list(known_guests)
 
 
 class DomainType(data.String):
