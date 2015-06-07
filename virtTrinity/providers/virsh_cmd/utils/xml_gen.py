@@ -1,5 +1,6 @@
 import os
 import re
+import types
 import xml.etree.ElementTree as etree
 import random
 import logging
@@ -14,6 +15,143 @@ class XMLError(Exception):
 
 SCHEMAS_PATH = '/usr/share/libvirt/schemas'
 MAX_DEEPTH = 100
+OVERIDE_MAP = {
+    "element": [
+    ],
+    "define": [
+    ],
+    "optional": [
+    ],
+    "attribute": [
+        ("/domain/type", None, "domain_type"),
+        ("/domain/os/type", r'/define[@name="archList"]/attribute', "arch_type"),
+    ],
+    "zeroOrMore": [
+    ],
+    "oneOrMore": [
+    ],
+    "data": [
+    ],
+    "choice": [
+    ],
+    "ref": [
+    ],
+    "empty": [
+    ],
+    "group": [
+    ],
+    "value": [
+    ],
+    "interleave": [
+    ],
+    "text": [
+    ],
+    "start": [
+    ],
+    "anyName": [
+    ],
+    "anyURI": [
+    ],
+}
+
+
+class ProcessBase(object):
+
+    def __init__(self):
+        self.xml = None
+        self.node = None
+        self.cont = False
+        self.name = ''
+        self.parent = None
+        self.nodetree = None
+        self.node_path = None
+        self.xml_path = None
+        self.params = None
+        self.cur_xml = None
+        self.xml_stack = None
+        self.choices = []
+
+    def process(self, func_name, node, xml_path, node_path, params):
+        self.xml_path = xml_path
+        self.node_path = node_path
+        self.params = params
+        self.xml_stack = params['xml_stack']
+        self.xml = self.xml_stack[0]
+        self.cur_xml = self.xml_stack[-1]
+        if len(self.xml_stack) > 1:
+            self.parent = self.xml_stack[-2]
+        self.node = node
+        self.nodetree = params['nodetree']
+        self.name = node.get('name')
+
+        result = getattr(self, func_name)()
+
+        return self.cont, result
+
+    def go_on(self):
+        self.cont = True
+
+
+class ProcessAttribute(ProcessBase):
+
+    def process(self, func_name, node, xml_path, node_path, params):
+        _, result = super(ProcessAttribute, self).process(
+            func_name, node, xml_path, node_path, params)
+
+        if isinstance(result, types.StringType):
+            self.cur_xml.set(self.name, result)
+        elif result is not None:
+            logging.error("Attribute should be a string, but %s found",
+                          type(result))
+        return self.cont, None
+
+    def domain_type(self):
+        if 'dom_types' in self.params:
+            dom_types = self.params['dom_types']
+        else:
+            dom_types = ["qemu", "kvm", "xen"]
+        return random.choice(dom_types)
+
+    def arch_type(self):
+        if 'archs' in self.params:
+            arch_types = self.params['archs']
+        else:
+            arch_types = ["x86_64", "i686", "ppc64"]
+        return random.choice(arch_types)
+
+
+class ProcessChoice(ProcessBase):
+
+    def process(self, func_name, node, xml_path, node_path, params):
+        self.choices = []
+        super(ProcessChoice, self).process(
+            func_name, node, xml_path, node_path, params)
+
+        if not self.choices:
+            return self.cont, None
+
+        choice = random.choice(self.choices)
+        return self.cont, parse_node(choice, params=self.params)
+
+    def os_type(self):
+        if 'os_types' in self.params:
+            os_types = self.params['os_types']
+        else:
+            os_types = ['hvm']
+        return random.choice(os_types)
+
+
+class ProcessValue(ProcessBase):
+
+    def process(self, func_name, node, xml_path, node_path, params):
+        _, result = super(ProcessValue, self).process(
+            func_name, node, xml_path, node_path, params)
+        if isinstance(result, types.StringType):
+            self.cur_xml.text = result
+        elif result is not None:
+            logging.error("Attribute should be a string, but %s found",
+                          type(result))
+        return self.cont, None
 
 
 def load_rng(file_name, is_root=True):
@@ -28,7 +166,7 @@ def load_rng(file_name, is_root=True):
     return nodetree if is_root else nodetree.getchildren()
 
 
-def gen_node(nodename=None, xml_type='domain', sanity='startable'):
+def gen_node(nodename=None, xml_type='domain', params=None):
     nodetree = load_rng(os.path.join(SCHEMAS_PATH, xml_type + '.rng'))
 
     if nodename is None:
@@ -36,17 +174,38 @@ def gen_node(nodename=None, xml_type='domain', sanity='startable'):
     else:
         node = nodetree.find("./define[@name='%s']" % nodename)
 
-    params = {
+    if params is None:
+        params = {}
+
+    params.update({
         'xml_stack': [],
         'node_stack': [],
         'nodetree': nodetree,
-        'sanity': sanity,
-    }
+    })
     return parse_node(node, params=params)
+
+
+def process_overide(tag, xml_path, node_path, node, params):
+    logging.debug('%s %s %s', tag, xml_path, node_path)
+    if tag not in OVERIDE_MAP:
+        raise XMLError('Unknown tag %s' % tag)
+
+    cont = True
+    result = None
+    for xml_patt, node_patt, func_name in OVERIDE_MAP[tag]:
+        if xml_patt is None or re.match('^' + xml_patt + '$', xml_path):
+            if node_patt is None or re.match('^' + node_patt + '$', node_path):
+                cls_name = 'Process' + tag.capitalize()
+                process_instance = globals()[cls_name]()
+                cont, result = process_instance.process(
+                    func_name, node, xml_path, node_path, params)
+
+    return cont, result
 
 
 def parse_node(node, params=None):
     xml_stack = params['xml_stack']
+    node_stack = params['node_stack']
     nodetree = params['nodetree']
 
     if len(xml_stack) > MAX_DEEPTH:
@@ -66,6 +225,14 @@ def parse_node(node, params=None):
         params['node_stack'] = [path_seg]
     else:
         params['node_stack'].append(path_seg)
+
+    xml_path = '/' + '/'.join(xml_tags)
+    node_path = '/' + '/'.join([tag for tag in node_stack])
+
+    cont, result = process_overide(
+        node.tag, xml_path, node_path, node, params)
+    if cont is not True:
+        return result
 
     subnodes = list(node)
 
@@ -101,7 +268,7 @@ def parse_node(node, params=None):
         xml_stack.append(element)
         for subnode in subnodes:
             sgl_res = parse_node(subnode, params)
-            if type(sgl_res) is str:
+            if isinstance(sgl_res, types.StringType):
                 element.text = sgl_res
         if len(xml_stack) > 1:
             xml_stack.pop()
@@ -201,8 +368,8 @@ def get_data(node):
         logging.error("Unhandled data type %s", data_type)
 
 
-def rnd_xml(name='domain'):
-    xml = gen_node(xml_type=name)
+def rnd_xml(name='domain', params=None):
+    xml = gen_node(xml_type=name, params=params)
     if name == 'domain':
         for elem in xml:
             if elem.tag in ['metadata', 'commandline']:

@@ -31,8 +31,28 @@ class CmdDefineFilePicker(picker.Picker):
         self.test.options['file'] = res
 
 
-class CmdDefineXMLPicker(picker.Picker):
+class CmdDefineArchTypeMachinePicker(picker.Picker):
     depends_on = CmdDefineFilePicker
+    data_type = data.DomainTypeArchOstypeMachine()
+    types = {
+        "positive": {
+            "patterns": None,
+            "data_type": data.AvailDomainTypeArchOstypeMachine(),
+        },
+        "other": {
+            "patterns": "TO BE SETUP",
+        }
+    }
+
+    def prerequisite(self):
+        return self.test.cmd == 'define' and 'file' in self.test.options
+
+    def apply(self, res):
+        self.test.type_arch_ostype_machine = res
+
+
+class CmdDefineXMLPicker(picker.Picker):
+    depends_on = CmdDefineArchTypeMachinePicker
     data_type = common_data.String()
     types = {
         "positive": {

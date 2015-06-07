@@ -6,36 +6,6 @@ from virtTrinity.providers.virsh_cmd import data
 from virtTrinity.providers.virsh_cmd.picker.cmd_define import CmdDefineXMLPicker
 
 
-class DomainXMLTypeChecker(picker.Checker):
-    depends_on = CmdDefineXMLPicker
-    types = {
-        "positive": {
-            "patterns": None,
-        },
-        "unsupported-arch": {
-            "patterns": "could not find capabilities for .*",
-        },
-        "other": {
-            "patterns": "unexpected domain type .*, expecting one of these: .*",
-        }
-    }
-
-    def prerequisite(self):
-        if isinstance(self.test.xml, ElementTree.Element):
-            return self.test.xml.tag == 'domain'
-
-    def predict(self):
-        dom_type = self.test.xml.get('type')
-        dom_arch = self.test.xml.find('./os/type').get('type')
-        if data.AvailDomainArch().validate(dom_arch):
-            if data.AvailDomainType().validate(dom_type):
-                return 'positive'
-            else:
-                return 'other'
-        else:
-            return 'unsupported-arch'
-
-
 class DomainXMLMemSizePicker(picker.Picker):
     depends_on = CmdDefineXMLPicker
     data_type = data.MemorySize()
