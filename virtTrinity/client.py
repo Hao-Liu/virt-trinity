@@ -118,10 +118,14 @@ class VirtTrinityApp(object):
                     self.counters['unexpected_pass'] += 1
                     self.stats['unexpected_pass'][res.stderr] += 1
                 elif res.exit_status == 'failure':
-                    if any([re.search(p, res.stderr) for p in fail_patts]):
-                        self.counters['expected_neg'] += 1
-                        self.stats['expected_neg'][res.stderr] += 1
-                    else:
+                    found = False
+                    for patt in fail_patts:
+                        if re.search(patt, res.stderr):
+                            self.counters['expected_neg'] += 1
+                            self.stats['expected_neg'][patt] += 1
+                            found = True
+                            break
+                    if not found:
                         self.counters['unexpected_neg'] += 1
                         self.stats['unexpected_neg'][res.stderr] += 1
             else:
