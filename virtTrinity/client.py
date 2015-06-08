@@ -6,6 +6,7 @@ import json
 import curses
 import random
 import logging
+import StringIO
 import requests
 import argparse
 import threading
@@ -17,6 +18,7 @@ from xml.etree import ElementTree
 from virtTrinity import provider
 from virtTrinity.utils import rnd
 
+logger = logging.getLogger('virtTrinity')
 
 class VirtTrinityApp(object):
     def __init__(self):
@@ -86,6 +88,7 @@ class VirtTrinityApp(object):
         self.exiting = False
         self.pause = False
         self.setting_watch = False
+        self.show_log = False
         self.watching = ''
         self.scroll_x = 0
         self.scroll_y = 0
@@ -174,6 +177,21 @@ class VirtTrinityApp(object):
             pad.addstr(0, 2, '%.2f%%' % (float(stat_cnt) / cnt * 100))
         pad.refresh(0, 0, 0, 0, height, width)
 
+    def _show_log(self):
+        maxy, maxx = self.screen.getmaxyx()
+        width, height = maxx / 2, maxy
+
+        cur_y = 1
+        pad = curses.newpad(height, width)
+        lines = self.stream.getvalue().splitlines()
+        for line in lines[-(height-2):]:
+            if len(line) > (width - 2):
+                line = line[:(width - 2)]
+            pad.addstr(cur_y, 1, line)
+            cur_y += 1
+        pad.box()
+        pad.refresh(0, 0, 0, 0, height, width)
+
     def _show_last_result(self):
         """
         Show last result of tested items
@@ -238,6 +256,8 @@ class VirtTrinityApp(object):
         elif ch == ord('w'):
             self.pause = True
             self.setting_watch = True
+        elif ch == ord('l'):
+            self.show_log = not self.show_log
         elif ch == ord('s'):
             self.last_item.save('saved_item.txt')
         elif ch == curses.KEY_UP:
@@ -330,18 +350,18 @@ class VirtTrinityApp(object):
                 auth=(self.args.username, self.args.password),
             )
             if response.status_code != 201:
-                logging.debug('Failed to send result (HTTP%s):',
+                logger.debug('Failed to send result (HTTP%s):',
                               response.status_code)
                 if 'DOCTYPE' in response.text:
                     html_path = 'debug_%s.html' % rnd.regex('[a-z]{4}')
                     with open(html_path, 'w') as fp:
                         fp.write(response.text)
-                    logging.debug('Html response saved to %s',
+                    logger.debug('Html response saved to %s',
                                   os.path.abspath(html_path))
                 else:
-                    logging.debug(response.text)
+                    logger.debug(response.text)
         except requests.ConnectionError, detail:
-            logging.debug('Failed to send result to server: %s', detail)
+            logger.debug('Failed to send result to server: %s', detail)
 
     def run_tests(self):
         """
@@ -360,6 +380,14 @@ class VirtTrinityApp(object):
         """
         Main loop to update screen and send tests results.
         """
+        self.stream = StringIO.StringIO()
+        self.handler = logging.StreamHandler(self.stream)
+        logger.setLevel(logging.DEBUG)
+
+        for handler in logger.handlers:
+            logger.removeHandler(handler)
+        logger.addHandler(self.handler)
+
         os.environ["EDITOR"] = "echo"
         last_thread = None
         curses.noecho()
@@ -378,7 +406,10 @@ class VirtTrinityApp(object):
                     self._show_watch_setting()
                     self._monitor_watch_input()
                 else:
-                    self._show_report()
+                    if self.show_log:
+                        self._show_log()
+                    else:
+                        self._show_report()
                     self._show_last_result()
                     self._monitor_key()
 

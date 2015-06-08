@@ -9,6 +9,9 @@ from virtTrinity.utils import rnd
 from xml.sax import saxutils
 
 
+logger = logging.getLogger(__name__)
+
+
 class XMLError(Exception):
     pass
 
@@ -101,7 +104,7 @@ class ProcessAttribute(ProcessBase):
         if isinstance(result, types.StringType):
             self.cur_xml.set(self.name, result)
         elif result is not None:
-            logging.error("Attribute should be a string, but %s found",
+            logger.error("Attribute should be a string, but %s found",
                           type(result))
         return self.cont, None
 
@@ -149,7 +152,7 @@ class ProcessValue(ProcessBase):
         if isinstance(result, types.StringType):
             self.cur_xml.text = result
         elif result is not None:
-            logging.error("Attribute should be a string, but %s found",
+            logger.error("Attribute should be a string, but %s found",
                           type(result))
         return self.cont, None
 
@@ -186,7 +189,7 @@ def gen_node(nodename=None, xml_type='domain', params=None):
 
 
 def process_overide(tag, xml_path, node_path, node, params):
-    logging.debug('%s %s %s', tag, xml_path, node_path)
+    logger.debug('%s %s %s', tag, xml_path, node_path)
     if tag not in OVERIDE_MAP:
         raise XMLError('Unknown tag %s' % tag)
 
@@ -212,7 +215,7 @@ def parse_node(node, params=None):
         return
 
     name = node.get('name')
-    logging.debug('parsing %s', node.tag)
+    logger.debug('parsing %s', node.tag)
 
     xml_tags = [xml.tag for xml in xml_stack]
     if name is None:
@@ -245,7 +248,7 @@ def parse_node(node, params=None):
                 sgl_res = parse_node(subnode, params)
                 if sgl_res is not None:
                     if result is not None:
-                        logging.info("Duplicated result in <define>")
+                        logger.info("Duplicated result in <define>")
                     result = sgl_res
             return result
     elif node.tag == "ref":
@@ -310,7 +313,7 @@ def parse_node(node, params=None):
             parse_node(subnode, params)
     elif node.tag in ["zeroOrMore", "oneOrMore"]:
         if len(subnodes) > 1:
-            logging.error("More than one subnodes when xOrMore")
+            logger.error("More than one subnodes when xOrMore")
 
         subnode = subnodes[0]
         min_cnt = 1 if node.tag == "oneOrMore" else 0
@@ -327,7 +330,7 @@ def parse_node(node, params=None):
     elif node.tag == 'anyURI':
         return "qemu:///system"
     else:
-        logging.error("Unhandled %s", node.tag)
+        logger.error("Unhandled %s", node.tag)
         exit(1)
 
 
@@ -360,12 +363,12 @@ def get_data(node):
         pattern = pattern[0].text if pattern else None
 
         if data_type == 'string' and pattern is None:
-            logging.info('None string found')
+            logger.info('None string found')
             return "NoneString"
 
         return rnd.regex(pattern)
     else:
-        logging.error("Unhandled data type %s", data_type)
+        logger.error("Unhandled data type %s", data_type)
 
 
 def rnd_xml(name='domain', params=None):

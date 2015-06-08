@@ -2,10 +2,14 @@ import os
 import re
 import random
 import inspect
+import logging
 import types
 
 from virtTrinity.utils import rnd
 from virtTrinity.utils import base
+
+
+logger = logging.getLogger(__name__)
 
 
 class DataError(Exception):

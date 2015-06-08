@@ -7,6 +7,9 @@ import inspect
 from virtTrinity import data
 
 
+logger = logging.getLogger(__name__)
+
+
 class PickerError(Exception):
     pass
 
@@ -74,7 +77,7 @@ class Picker(PickerBase):
         else:
             chosen_type = random.choice(types)
 
-        logging.debug('Chosen type is %s in %s', chosen_type, types)
+        logger.debug('Chosen type is %s in %s', chosen_type, types)
 
         # Get chosen data type instance and failure patterns.
         if chosen_type == 'other':
@@ -90,7 +93,7 @@ class Picker(PickerBase):
                     "Type '%s' don't have 'data_type' in class '%s'" %
                     (chosen_type, self.__class__.__name__))
         fail_patts = self.types[chosen_type]['patterns']
-        logging.debug('Fail patterns are %s', fail_patts)
+        logger.debug('Fail patterns are %s', fail_patts)
 
         try:
             if data_type:
@@ -172,9 +175,9 @@ class Setter(PickerBase):
 
 def pick(item, root=None):
     picker_classes = {root.__name__: root}
-    logging.debug('Start picking')
+    logger.debug('Start picking')
     while True:
-        logging.debug('Current %s pickers: %s', len(picker_classes), picker_classes)
+        logger.debug('Current %s pickers: %s', len(picker_classes), picker_classes)
         picked_count = 0
         for name, picker_class in picker_classes.items():
             picker = picker_class(item)
@@ -192,7 +195,7 @@ def pick(item, root=None):
                         for c_name, c_picker in picker_class.children.items():
                             picker_classes[c_name] = c_picker
                 del picker_classes[name]
-        logging.debug('Picked %d from %d', picked_count, len(picker_classes))
+        logger.debug('Picked %d from %d', picked_count, len(picker_classes))
         if picked_count == 0:
             break
 
@@ -205,7 +208,7 @@ def setup_picker_tree(module):
         inspect.getmembers(sys.modules[module.__name__],
                            predicate=_picker_predicate))
 
-    logging.debug('Found %s pickers: %s', len(pickers), pickers)
+    logger.debug('Found %s pickers: %s', len(pickers), pickers)
 
     root = pickers[module.root_picker]
 
