@@ -9,7 +9,7 @@ from virtTrinity.utils import rnd
 from xml.sax import saxutils
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('virtTrinity.provider')
 
 
 class XMLError(Exception):
@@ -27,7 +27,7 @@ OVERIDE_MAP = {
     ],
     "attribute": [
         ("/domain/type", None, "domain_type"),
-        ("/domain/os/type", r'/define[@name="archList"]/attribute', "arch_type"),
+        ("/domain/os/type/arch", None, "arch_type"),
     ],
     "zeroOrMore": [
     ],
@@ -36,6 +36,7 @@ OVERIDE_MAP = {
     "data": [
     ],
     "choice": [
+        ("/domain", r'/define\[@name="os"\]/choice', "os_type"),
     ],
     "ref": [
     ],
@@ -141,7 +142,11 @@ class ProcessChoice(ProcessBase):
             os_types = self.params['os_types']
         else:
             os_types = ['hvm']
-        return random.choice(os_types)
+
+        for os_type in os_types:
+            subnode = self.node.find('./ref[@name="os%s"]' % os_type)
+            if subnode is not None:
+                self.choices.append(subnode)
 
 
 class ProcessValue(ProcessBase):

@@ -39,9 +39,6 @@ class CmdDefineArchTypeMachinePicker(picker.Picker):
             "patterns": None,
             "data_type": data.AvailDomainTypeArchOstypeMachine(),
         },
-        "other": {
-            "patterns": "TO BE SETUP",
-        }
     }
 
     def prerequisite(self):
