@@ -205,6 +205,9 @@ def process_overide(tag, xml_path, node_path, node, params):
             if node_patt is None or re.match('^' + node_patt + '$', node_path):
                 cls_name = 'Process' + tag.capitalize()
                 process_instance = globals()[cls_name]()
+                logger.warn(
+                    "Overriding function: '%s'",
+                    func_name)
                 cont, result = process_instance.process(
                     func_name, node, xml_path, node_path, params)
 
