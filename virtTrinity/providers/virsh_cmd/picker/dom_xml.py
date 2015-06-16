@@ -96,7 +96,10 @@ class DomainXMLMemoryBackingHugepagesNodesetPicker(picker.Picker):
             "data_type": data.Nodeset(),
         },
         "other": {
-            "patterns": "Failed to parse bitmap '.*'",
+            "patterns": [
+                "Failed to parse bitmap '.*'",
+                "Extra element memoryBacking in interleave",
+            ],
         }
     }
 
@@ -122,7 +125,10 @@ class DomainXMLCputuneVcpupinCpusetPicker(picker.Picker):
             "data_type": data.Nodeset(),
         },
         "other": {
-            "patterns": "Failed to parse bitmap '.*'",
+            "patterns": [
+                "Failed to parse bitmap '.*'",
+                "Extra element cputune in interleave",
+            ],
         }
     }
 
@@ -147,7 +153,10 @@ class DomainXMLCputuneEmulatorpinCpusetPicker(picker.Picker):
             "data_type": data.Nodeset(),
         },
         "other": {
-            "patterns": "Failed to parse bitmap '.*'",
+            "patterns": [
+                "Failed to parse bitmap '.*'",
+                "Extra element cputune in interleave",
+            ],
         }
     }
 
@@ -172,7 +181,10 @@ class DomainXMLCputuneIothreadpinCpusetPicker(picker.Picker):
             "data_type": data.Nodeset(),
         },
         "other": {
-            "patterns": "Failed to parse bitmap '.*'",
+            "patterns": [
+                "Failed to parse bitmap '.*'",
+                "Extra element cputune in interleave",
+            ],
         }
     }
 
@@ -197,7 +209,10 @@ class DomainXMLVcpuCpusetPicker(picker.Picker):
             "data_type": data.Nodeset(),
         },
         "other": {
-            "patterns": "Failed to parse bitmap '.*'",
+            "patterns": [
+                "Failed to parse bitmap '.*'",
+                "Extra element vcpu in interleave",
+            ],
         }
     }
 
